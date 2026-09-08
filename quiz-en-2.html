@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Interactive Quiz</title>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script>
+  window.MathJax = {
+    tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] },
+    options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre'] }
+  };
+</script>
+<style>
+
+:root{ --bg:#0b1220; --panel:#111a2e; --text:#e5e7eb; --muted:#aab3c5; --primary:#6366f1; --primary2:#22c55e; --border:color-mix(in srgb, var(--text) 18%, transparent); --option-bg:color-mix(in srgb, var(--panel) 88%, var(--primary) 12%); --option-hover:color-mix(in srgb, var(--panel) 80%, var(--primary) 20%); --option-active:color-mix(in srgb, var(--panel) 72%, var(--primary) 28%); --radius:16px; --app-font:'Noto Sans', 'Segoe UI', Tahoma, Arial, sans-serif; }
+body{ margin:0; font-family:var(--app-font); background:var(--bg); color:var(--text); min-height:100vh; display:flex; justify-content:center; padding:20px; box-sizing:border-box; }
+button,input,table,th,td,label,h1,h2,h3,p,div{ font-family:var(--app-font); }
+.card{ background:var(--panel); width:100%; max-width:600px; border-radius:var(--radius); padding:24px; box-shadow:0 10px 30px rgba(0,0,0,0.3); border:1px solid var(--border); }
+h1{ margin:0 0 10px; font-size:22px; text-align:center; } .desc{ color:var(--muted); font-size:13px; margin-bottom:20px; text-align:center; line-height:1.5; }
+.quizLogoWrap{ width:162px; height:162px; border-radius:50%; overflow:hidden; margin:4px auto 18px; border:1px solid var(--border); background:rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:center; }
+.quizLogo{ width:100%; height:100%; object-fit:cover; display:block; }
+.loginIntro{ text-align:center; }
+.loginForm{ width:100%; max-width:420px; margin:0 auto; }
+.loginForm label{ text-align:left; }
+.loginForm input{ text-align:left; }
+.reviewBox{ margin-top:20px; border-top:1px solid var(--border); padding-top:18px; }
+.reviewItem{ border:1px solid var(--border); border-radius:12px; padding:14px; margin-top:12px; background:color-mix(in srgb, var(--panel) 90%, var(--primary) 10%); }
+.badge{ display:inline-block; padding:4px 8px; border-radius:999px; font-size:11px; font-weight:800; margin-bottom:8px; }
+.badge.ok{ background:rgba(34,197,94,.16); color:var(--primary2); }
+.badge.no{ background:rgba(239,68,68,.16); color:#ef4444; }
+.reviewMeta{ font-size:13px; line-height:1.55; color:var(--text); }
+.reviewMeta b{ color:var(--muted); }
+label{ font-size:10px; text-transform:uppercase; font-weight:bold; color:var(--muted); margin-bottom:4px; display:block; }
+.loginForm label{ font-size:12px; }
+.loginForm input{ padding:10px 12px; }
+input{ width:100%; padding:12px; border-radius:10px; border:1px solid var(--border); background:color-mix(in srgb, var(--panel) 92%, var(--text) 8%); color:var(--text); margin-bottom:15px; box-sizing:border-box; outline:none; }
+.loginForm input{ padding:10px 12px; }
+.timerBox{ width:max-content; min-width:118px; margin:0 auto 14px; padding:8px 16px; border-radius:999px; background:linear-gradient(135deg, color-mix(in srgb, var(--primary) 18%, var(--panel) 82%), color-mix(in srgb, var(--primary2) 16%, var(--panel) 84%)); border:1px solid color-mix(in srgb, var(--primary) 42%, var(--border)); color:var(--primary2); font-size:17px; font-weight:800; letter-spacing:.04em; text-align:center; box-shadow:0 8px 22px rgba(0,0,0,.16); }
+.timeEndNotice{ margin:0 0 16px; padding:12px 14px; border-radius:14px; background:color-mix(in srgb, #ef4444 12%, var(--panel) 88%); border:1px solid color-mix(in srgb, #ef4444 46%, var(--border)); color:var(--text); text-align:center; font-size:15px; font-weight:800; }
+.btn{ background:var(--primary); color:#fff; border:none; padding:12px 20px; border-radius:10px; cursor:pointer; font-weight:800; width:100%; transition:0.2s; box-shadow:0 8px 18px rgba(0,0,0,.22); }
+.btn:hover{ filter:brightness(1.1); }
+.btn-back{ background:linear-gradient(135deg, var(--primary), var(--primary2)); color:#fff; border:1px solid rgba(255,255,255,.35); box-shadow:0 0 0 3px rgba(255,255,255,.10), 0 8px 22px rgba(0,0,0,.25); }
+.btn-back:hover{ filter:brightness(1.18); box-shadow:0 0 0 4px rgba(255,255,255,.14), 0 10px 26px rgba(0,0,0,.30); }
+.opt{ display:block; padding:14px; border:1px solid color-mix(in srgb, var(--primary) 35%, var(--border)); border-radius:10px; margin-bottom:10px; cursor:pointer; transition:0.2s; background:var(--option-bg); color:var(--text); font-weight:600; }
+.opt:hover{ background:var(--option-hover); border-color:color-mix(in srgb, var(--primary) 55%, var(--border)); } .opt.active{ border-color:var(--primary); background:var(--option-active); box-shadow:0 0 0 3px color-mix(in srgb, var(--primary) 24%, transparent); }
+.bar{ height:6px; background:rgba(255,255,255,0.05); border-radius:3px; margin-bottom:20px; overflow:hidden; }
+.fill{ height:100%; background:var(--primary); transition:width 0.3s; }
+table{ width:100%; border-collapse:collapse; margin-top:15px; font-size:12px; }
+th, td{ text-align:left; padding:8px; border-bottom:1px solid var(--border); }
+@media (min-width: 901px){ body{ overflow:hidden; } .card{ max-height:calc(100vh - 40px); overflow:auto; } }
+
+</style>
+</head>
+<body>
+<div class="card" id="app"></div>
+<script>
+const DATA = {"title":"Interactive Quiz","desc":"Answer all questions and review your feedback at the end.","lang":"en","randQ":true,"randA":false,"saveData":true,"classLbl":"sid","sheetUrl":"","logoUrl":"","timerMinutes":10,"hasExplanation":true,"questions":[{"q":"In the context of the 'Anatomy of Tech,' which of the following best describes 'Hard Technology'?","choices":["The physical embodiment of technology based on engineering principles.","The decision-making processes and social factors influencing human interaction.","Support systems and group process techniques that facilitate learning.","The academic discipline used to evaluate processes and resources for learning."],"answerIndex":0,"explain":"Hard technology focuses on the 'know-how' and the tangible tools, machines, and equipment used in a system.","rationales":["Hard technology focuses on the 'know-how' and the tangible tools, machines, and equipment used in a system.","These elements are characteristic of soft technology, which focuses on human and social scaffolding rather than physical tools.","Process techniques and support systems are components of soft technology, representing the 'know-why' of a system.","This describes instructional technology as an academic field rather than the specific category of hard technology."]},{"q":"Which pillar of innovative technology is specifically credited with 'democratizing access' to education?","choices":["Online Courses","Educational Software","Modern Teaching Aids","Social Networking Tools"],"answerIndex":0,"explain":"Platforms like Coursera and edX remove geographical and financial barriers, making education accessible to a wider audience.","rationales":["Platforms like Coursera and edX remove geographical and financial barriers, making education accessible to a wider audience.","While software provides targeted learning, it is the distribution model of online courses that primary democratizes access.","Teaching aids focus on making instruction easier and more effective for the teacher rather than broadening general access.","These tools facilitate collaborative classrooms and academic networks but do not necessarily democratize foundational access."]},{"q":"In the traditional classroom paradigm, what is a primary outcome of the 'Chalk and Talk' method?","choices":["Students may become bored or passive receivers of information.","Students develop self-directed learning and teamwork skills.","The teacher loses control over the pace of the curriculum.","Information retention is maximized through kinaesthetic activities."],"answerIndex":0,"explain":"The unidirectional flow of information often results in a 'dropped signal' where students disengage from the lecture.","rationales":["The unidirectional flow of information often results in a 'dropped signal' where students disengage from the lecture.","Self-direction and teamwork are core outcomes of a student-centered approach, not a teacher-centered one.","In this paradigm, the teacher maintains full control over the delivery and classroom environment.","The 'Chalk and Talk' method is primarily auditory and visual, often lacking hands-on kinaesthetic engagement."]},{"q":"According to the 'Diversity of Information Retention,' which learning style relies on trial-and-error and problem-solving?","choices":["Kinaesthetic","Auditory","Read/Write","Visual"],"answerIndex":0,"explain":"This style focuses on hands-on activities and physical engagement to cement learning through experience.","rationales":["This style focuses on hands-on activities and physical engagement to cement learning through experience.","Auditory learning relies on verbalizing lessons, recordings, and listening to lectures rather than physical trials.","This style emphasizes text-based interaction, such as note-taking and reading textbooks.","Visual learning uses imagery, videos, and demonstrations to convey information rather than manual problem-solving."]},{"q":"What is the primary core outcome sought by shifting to a student-centered learning paradigm?","choices":["Active learning resulting in better understanding.","Complete elimination of teacher involvement in the classroom.","A transition to purely text-based instructional materials.","Reducing the curriculum complexity for easier grading."],"answerIndex":0,"explain":"The shift aims to move students from passive reception to active engagement to deepen their comprehension of the material.","rationales":["The shift aims to move students from passive reception to active engagement to deepen their comprehension of the material.","The teacher still plays a vital role as a facilitator, though they no longer retain 'full control' in the traditional sense.","Student-centered learning is multi-modal and incorporates various technologies and collaborative styles.","The focus is on skill generation and critical thinking, which often increases the depth of the learning experience."]},{"q":"Within the academic discipline of Instructional Technology, what specific tasks occur during the 'Develop' phase?","choices":["Creating a prototype, developing course materials, and conducting pilot sessions.","Identifying needs, requirements, tasks, and participant capabilities.","Defining learning objectives and choosing the delivery format.","Measuring awareness, knowledge, behavior change, and final results."],"answerIndex":0,"explain":"This phase focuses on the actual production and initial testing of the instructional resources before full implementation.","rationales":["This phase focuses on the actual production and initial testing of the instructional resources before full implementation.","These tasks belong to the 'Analysis' phase, which precedes the actual creation of materials.","Objective setting and format selection are part of the 'Design' phase.","Assessment of outcomes and behavior change occurs during the 'Evaluate' phase of the cycle."]},{"q":"When analyzing the 'Anatomy of Educational Software,' which set of inputs is processed to produce student engagement?","choices":["Pictures, Graphics, and Sound.","Gantt Charts, Milestones, and Timelines.","Hardware, Servers, and Network Cabling.","Academic Theory and Student Curiosity."],"answerIndex":0,"explain":"Multimedia inputs are combined within the software's high-level interactivity to keep students interested.","rationales":["Multimedia inputs are combined within the software's high-level interactivity to keep students interested.","These are management tools used for project-based learning structure, not multimedia software inputs.","These represent basic Information Technology (IT) infrastructure rather than educational software content inputs.","While these fuel the PBL Engine, the software anatomy diagram specifically lists sensory multimedia as the inputs."]},{"q":"How does the 'PBL Engine' transform its inputs into skills like critical thinking and collaboration?","choices":["By applying academic theory to student curiosity through practical application.","By using automated grading systems to provide instant feedback.","By following a unidirectional delivery model from teacher to student.","By focusing exclusively on soft technology and ignoring hardware."],"answerIndex":0,"explain":"The engine integrates theoretical knowledge with the student's drive to explore real-world problems.","rationales":["The engine integrates theoretical knowledge with the student's drive to explore real-world problems.","The PBL model emphasizes practical application and synthesis over simple automated assessment.","PBL is a student-centered framework that moves away from the traditional unidirectional model.","PBL relies on both structured courseware (hard tech tools) and scaffolding (soft tech processes)."]},{"q":"In the 'Structuring PBL for Success' model, why is a Gantt Chart considered 'absolutely essential'?","choices":["To maintain student focus and project momentum through strict timeline management.","To replace the need for high-quality educational courseware.","To provide a visual repository for pictures and graphics inputs.","To facilitate 'Chalk and Talk' sessions during the prototype review."],"answerIndex":0,"explain":"Managing phases like ideation, design, and delivery ensures projects do not stall or lose direction.","rationales":["Managing phases like ideation, design, and delivery ensures projects do not stall or lose direction.","PBL requires both structured materials and timeline management; one does not replace the other.","A Gantt Chart is a time-management tool, whereas media repositories serve a different organizational function.","Gantt Charts support student-centered milestones, whereas 'Chalk and Talk' is a traditional, teacher-centered method."]},{"q":"The 'Modern Learning Ecosystem' synthesis concludes that empowered learning is achieved through which combined formula?","choices":["Hard Tech + Soft Tech + Diverse Learning Styles.","Teacher Control + Linear Seating + Academic Theory.","Online Courses + Social Media + Information Technology.","Evaluation + Analysis + Development Cycle."],"answerIndex":0,"explain":"Empowerment comes from combining physical tools, human scaffolding, and catering to individual sensory retention needs.","rationales":["Empowerment comes from combining physical tools, human scaffolding, and catering to individual sensory retention needs.","This formula describes the traditional classroom paradigm rather than the modern ecosystem.","While these are elements of innovation, they do not encompass the full synthesis of scaffolding and learning styles.","This represents the internal process of Instructional Technology as a discipline, not the broader learning ecosystem."]}]}; 
+const UI = {"name":"Full Name","class":"sid","start":"Start Quiz","next":"Next","back":"Back","finish":"Finish","retake":"Retake","rank":"Top 10 Ranking","saving":"Saving data...","result":"Result","q":"Q","tableName":"Name","tableClass":"sid","percent":"%","alertInfo":"Please fill in your details.","alertChoose":"Please choose an answer.","review":"Answer Review","questionLabel":"Question","answerLabel":"Answer","explanationLabel":"Explanation","correct":"Correct","incorrect":"Incorrect","feedbackCorrect":"Correct answer, no comment.","feedbackWrong":"Your answer does not match the key concept.","noRefNote":"No explanation was found in the uploaded question file.","timeEnd":"Time End"};
+let state = { mode:'login', idx:0, ans:[], name:'', class:'', qs:[], loading:false, ranking:[], endTime:0, remaining:0, timeEnded:false };
+let timerInterval = null;
+function esc(v){ return String(v ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function formatTime(ms){ const total = Math.max(0, Math.ceil(ms/1000)); const m = Math.floor(total/60); const s = total % 60; return String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0'); }
+function startTimer(){ if(timerInterval) clearInterval(timerInterval); if(!DATA.timerMinutes) return; state.endTime = Date.now() + DATA.timerMinutes * 60000; timerInterval = setInterval(() => { state.remaining = state.endTime - Date.now(); if(state.remaining <= 0){ clearInterval(timerInterval); timerInterval = null; state.timeEnded = true; finish(); } else if(state.mode === 'quiz') { const el = document.getElementById('timerBox'); if(el) el.textContent = formatTime(state.remaining); } }, 1000); }
+function timerHtml(){ return DATA.timerMinutes && state.mode === 'quiz' ? '<div class="timerBox" id="timerBox">' + formatTime(state.endTime - Date.now()) + '</div>' : ''; }
+function buildReview(){
+  return '<div class="reviewBox"><h3 style="text-align:center; margin:0 0 12px;">' + UI.review + '</h3>' +
+    state.qs.map((q,i) => {
+      const picked = state.ans[i];
+      const ok = picked === q.answerIndex;
+      const userAns = picked === null || picked === undefined ? '-' : q.choices[picked];
+      const selectedRationale = q.rationales && picked !== null && picked !== undefined ? q.rationales[picked] : "";
+      const correctRationale = q.rationales ? q.rationales[q.answerIndex] : "";
+      const fb = selectedRationale || correctRationale || q.explain || (ok ? UI.feedbackCorrect : UI.feedbackWrong + " " + UI.noRefNote);
+      return '<div class="reviewItem">' +
+        '<span class="badge ' + (ok ? 'ok' : 'no') + '">' + (ok ? UI.correct : UI.incorrect) + '</span>' +
+        '<div class="reviewMeta"><b>' + UI.questionLabel + ':</b> ' + esc(q.q) + '</div>' +
+        '<div class="reviewMeta"><b>' + UI.answerLabel + ':</b> ' + esc(userAns) + '</div>' +
+        '<div class="reviewMeta"><b>' + UI.explanationLabel + ':</b> ' + esc(fb) + '</div>' +
+      '</div>';
+    }).join('') + '</div>';
+}
+
+function render(){
+  const app = document.getElementById('app');
+  if(state.mode==='login'){
+    const logoHtml = DATA.logoUrl ? '<div class="quizLogoWrap"><img class="quizLogo" src="' + esc(DATA.logoUrl) + '" alt="Logo"></div>' : '';
+    app.innerHTML = '<div class="loginIntro">' + logoHtml + '<h1>' + DATA.title + '</h1><p class="desc">' + DATA.desc + '</p></div>' +
+      '<div class="loginForm"><label>' + UI.name + '</label><input type="text" id="u_name" value="' + esc(state.name) + '">' +
+      '<label>' + UI.class + '</label><input type="text" id="u_class" value="' + esc(state.class) + '">' +
+      '<button class="btn" onclick="start()">' + UI.start + '</button></div>';
+  } else if(state.mode==='quiz'){
+    const q = state.qs[state.idx];
+    const backBtn = state.idx > 0 ? '<button class="btn btn-back" style="margin-top:10px;" onclick="back()">' + UI.back + '</button>' : '';
+    const finishBtn = state.idx === state.qs.length - 1 ? '<button class="btn" style="margin-top:10px;" onclick="next()">' + UI.finish + '</button>' : '';
+    app.innerHTML = timerHtml() + '<div class="bar"><div class="fill" style="width:' + ((state.idx)/state.qs.length)*100 + '%"></div></div>' +
+      '<div style="font-size:11px; color:var(--muted); margin-bottom:10px;">' + UI.q + ' ' + (state.idx+1) + ' / ' + state.qs.length + '</div>' +
+      '<h2 style="font-size:17px; margin-bottom:20px;">' + q.q + '</h2>' +
+      q.choices.map((c,i) => '<div class="opt ' + (state.ans[state.idx]===i?'active':'') + '" onclick="setAns(' + i + ')">' + c + '</div>').join('') +
+      finishBtn + backBtn;
+  } else if(state.mode==='result'){
+    let score = state.ans.reduce((acc, a, i) => acc + (a === state.qs[i].answerIndex ? 1 : 0), 0);
+    let pct = Math.round((score/state.qs.length)*100);
+    let html = '<h1>' + UI.result + '</h1>' + (state.timeEnded ? '<div class="timeEndNotice">' + UI.timeEnd + '</div>' : '') + '<div style="font-size:48px; font-weight:900; color:var(--primary2);">' + pct + '% (' + score + '/' + state.qs.length + ')</div>';
+    html += buildReview();
+    if(DATA.saveData){
+      html += '<div style="margin-top:20px; border-top:1px solid var(--border); padding-top:20px;"><h3 style="text-align:center;">' + UI.rank + '</h3>';
+      if(state.loading) html += '<p>' + UI.saving + '</p>';
+      else if(state.ranking.length > 0) {
+        html += '<table><tr><th>#</th><th>' + UI.tableName + '</th><th>' + UI.tableClass + '</th><th>' + UI.percent + '</th></tr>' + 
+          state.ranking.map((r,i) => '<tr><td>' + (i+1) + '</td><td>' + esc(r.name) + '</td><td>' + esc(r.class) + '</td><td>' + esc(r.percent) + '</td></tr>').join('') + '</table>';
+      }
+      html += '</div>';
+    }
+    html += '<button class="btn" style="margin-top:20px;" onclick="location.reload()">' + UI.retake + '</button>';
+    app.innerHTML = html;
+  }
+  if (window.MathJax && window.MathJax.typeset) window.MathJax.typeset();
+}
+function start(){
+  state.name = document.getElementById('u_name').value.trim(); 
+  state.class = document.getElementById('u_class').value.trim();
+  if(!state.name || !state.class) return alert(UI.alertInfo);
+  state.qs = JSON.parse(JSON.stringify(DATA.questions));
+  if(DATA.randQ) state.qs.sort(() => Math.random()-0.5);
+  if(DATA.randA) state.qs.forEach(q => {
+    const originalCorrect = q.choices[q.answerIndex];
+    const rationales = Array.isArray(q.rationales) ? q.rationales : [];
+    const pairs = q.choices.map((choice, idx) => ({ choice, rationale: rationales[idx] || "" }));
+    pairs.sort(() => Math.random()-0.5);
+    q.choices = pairs.map(p => p.choice);
+    q.rationales = pairs.map(p => p.rationale);
+    q.answerIndex = q.choices.indexOf(originalCorrect);
+  });
+  state.ans = new Array(state.qs.length).fill(null);
+  state.timeEnded = false;
+  state.mode = 'quiz'; startTimer(); render();
+}
+function setAns(i){ state.ans[state.idx] = i; if(state.idx < state.qs.length - 1){ state.idx++; } render(); }
+function back(){ if(state.idx > 0){ state.idx--; render(); } }
+function next(){
+  if(state.ans[state.idx]===null) return alert(UI.alertChoose);
+  if(state.idx < state.qs.length - 1){ state.idx++; render(); }
+  else { finish(); }
+}
+async function finish(){
+  if(timerInterval){ clearInterval(timerInterval); timerInterval = null; }
+  state.mode = 'result'; render();
+  if(DATA.saveData && DATA.sheetUrl){
+    state.loading = true; render();
+    let score = state.ans.reduce((acc, a, i) => acc + (a === state.qs[i].answerIndex ? 1 : 0), 0);
+    let pct = Math.round((score/state.qs.length)*100);
+    try {
+      await fetch(DATA.sheetUrl, { method:'POST', body: JSON.stringify({name:state.name, class:state.class, score:score, percent:pct}), mode:'no-cors' });
+      setTimeout(async () => {
+        try { const res = await fetch(DATA.sheetUrl); state.ranking = await res.json(); render(); } catch(e){}
+        state.loading = false; render();
+      }, 1500);
+    } catch(e){ state.loading = false; render(); }
+  }
+}
+render();
+</script>
+</body></html>
